@@ -1,0 +1,80 @@
+﻿@page "/fetchdata"
+@using shelter.Shared
+@inject HttpClient Http
+@using Blazored.Modal
+
+<h1>Shelter</h1>
+
+<p>Oversigt over alle shelters</p>
+
+<section>
+    <form class="gallery_search_form">
+
+        <input type="search" class="gallery_search_input" id="searchtext" placeholder="Search...">
+    </form>
+
+    @if (shelters == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Kommune</th>
+                    <th>Navn</th>
+                    <th>Antal Personer</th>
+                    <th>Reserver</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var shel in shelters)
+                {
+                    <tr>
+                        <td>@shel.properties.cvr_navn </td>
+                        <td>@shel.properties.navn</td>
+                        <td>@shel.properties.antal_pl</td>
+                        <td><button type="button" class="btn btn-primary btn-sm" @onclick="() => OpenMakeABooking()">Tilføj Booking</button></td>
+
+                    </tr>
+                }
+            </tbody>
+
+
+        </table>
+
+
+    }
+</section>
+
+@if (MakeABookingOpen)
+{
+    <shelter.Client.Components.ModalDialog ModalTitle="Booking af shelter" ModalText="Indtast nedstående felter" OnClose="@OnMakeABookingClose">
+    </shelter.Client.Components.ModalDialog>
+}
+
+@code {
+    public bool MakeABookingOpen { get; set; }
+
+    private void OnMakeABookingClose(bool accepted)
+    {
+        MakeABookingOpen = false;
+        StateHasChanged();
+    }
+
+    private void OpenMakeABooking()
+    {
+        MakeABookingOpen = true;
+        StateHasChanged();
+    }
+
+    private Shelters[] shelters = Array.Empty<Shelters>();
+
+    // Indkaspsling
+    protected override async Task OnInitializedAsync()
+    {
+        shelters = await Http.GetFromJsonAsync<Shelters[]>("Shelters");
+    }
+}
